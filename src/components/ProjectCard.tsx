@@ -1,14 +1,18 @@
 
-import { Project, agents as allAgents } from "@/lib/mock-data";
+import { Project, Agent } from "@/lib/types";
 import { Users, ListTodo } from "lucide-react";
 
-export default function ProjectCard({ project }: { project: Project }) {
-  const projectAgents = allAgents.filter((a) => project.agents.includes(a.id));
-  const statusBadge = {
+export default function ProjectCard({ project, agents }: { project: Project; agents?: Agent[] }) {
+  const agentIds = project.agent_ids ? project.agent_ids.split(",") : [];
+  const projectAgents = agents ? agents.filter((a) => agentIds.includes(a.id)) : [];
+
+  const statusBadge: Record<string, { bg: string; color: string }> = {
     active: { bg: "rgba(34, 197, 94, 0.15)", color: "#22c55e" },
     paused: { bg: "rgba(234, 179, 8, 0.15)", color: "#eab308" },
     completed: { bg: "rgba(79, 143, 255, 0.15)", color: "#4f8fff" },
   };
+
+  const badge = statusBadge[project.status] || statusBadge.active;
 
   return (
     <div
@@ -30,13 +34,12 @@ export default function ProjectCard({ project }: { project: Project }) {
         </div>
         <span
           className="text-xs px-2 py-0.5 rounded-full capitalize"
-          style={{ background: statusBadge[project.status].bg, color: statusBadge[project.status].color }}
+          style={{ background: badge.bg, color: badge.color }}
         >
           {project.status}
         </span>
       </div>
 
-      {/* Progress bar */}
       <div className="mb-3">
         <div className="flex justify-between text-xs mb-1" style={{ color: "var(--text-secondary)" }}>
           <span>Progress</span>
@@ -62,7 +65,7 @@ export default function ProjectCard({ project }: { project: Project }) {
         </div>
         <div className="flex items-center gap-1">
           <ListTodo size={12} />
-          {project.completedTasks}/{project.taskCount} tasks
+          {project.completed_tasks}/{project.task_count} tasks
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 
-import { tasks as allTasks, agents as allAgents } from "@/lib/mock-data";
+import { Task, Agent } from "@/lib/types";
 import { Flag } from "lucide-react";
 
 const columns = [
@@ -9,22 +9,18 @@ const columns = [
   { id: "done", label: "Done", color: "#22c55e" },
 ];
 
-const priorityColors = {
+const priorityColors: Record<string, string> = {
   low: "#6b7280",
   medium: "#4f8fff",
   high: "#eab308",
   critical: "#ef4444",
 };
 
-export default function TaskBoard({ projectFilter }: { projectFilter?: string }) {
-  const filtered = projectFilter
-    ? allTasks.filter((t) => t.projectId === projectFilter)
-    : allTasks;
-
+export default function TaskBoard({ tasks, agents }: { tasks: Task[]; agents: Agent[] }) {
   return (
     <div className="grid grid-cols-4 gap-4 h-full">
       {columns.map((col) => {
-        const colTasks = filtered.filter((t) => t.status === col.id);
+        const colTasks = tasks.filter((t) => t.status === col.id);
         return (
           <div key={col.id} className="flex flex-col">
             <div className="flex items-center gap-2 mb-3 px-1">
@@ -41,15 +37,12 @@ export default function TaskBoard({ projectFilter }: { projectFilter?: string })
             </div>
             <div className="flex-1 space-y-2">
               {colTasks.map((task) => {
-                const agent = allAgents.find((a) => a.id === task.assignedAgent);
+                const agent = agents.find((a) => a.id === task.assigned_agent);
                 return (
                   <div
                     key={task.id}
                     className="rounded-lg p-3 cursor-pointer hover:scale-[1.02] transition-all"
-                    style={{
-                      background: "var(--bg-card)",
-                      border: "1px solid var(--border)",
-                    }}
+                    style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
                   >
                     <div className="text-xs font-medium mb-2" style={{ color: "var(--text-primary)" }}>
                       {task.title}

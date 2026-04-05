@@ -1,8 +1,15 @@
 
+"use client";
+import { useCallback } from "react";
 import ActivityFeed from "./ActivityFeed";
-import { activities } from "@/lib/mock-data";
+import { api } from "@/lib/api";
+import { useData } from "@/lib/useData";
 
 export default function ActivityView() {
+  const { data: activities } = useData(useCallback(() => api.getActivity(50), []), 5000);
+
+  if (!activities) return <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Loading...</div>;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

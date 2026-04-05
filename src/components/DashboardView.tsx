@@ -1,19 +1,30 @@
 
+"use client";
+import { useCallback } from "react";
 import StatsBar from "./StatsBar";
 import AgentCard from "./AgentCard";
 import ProjectCard from "./ProjectCard";
 import ActivityFeed from "./ActivityFeed";
-import { agents, projects, activities } from "@/lib/mock-data";
+import { api } from "@/lib/api";
+import { useData } from "@/lib/useData";
 
 export default function DashboardView() {
+  const { data: stats } = useData(useCallback(() => api.getStats(), []), 10000);
+  const { data: agents } = useData(useCallback(() => api.getAgents(), []), 10000);
+  const { data: projects } = useData(useCallback(() => api.getProjects(), []), 10000);
+  const { data: activities } = useData(useCallback(() => api.getActivity(10), []), 5000);
+
+  if (!stats || !agents || !projects || !activities) {
+    return <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Loading...</div>;
+  }
+
   const activeAgents = agents.filter((a) => a.status === "active");
 
   return (
     <div className="space-y-6">
-      <StatsBar />
+      <StatsBar stats={stats} />
 
       <div className="grid grid-cols-3 gap-6">
-        {/* Left: Active agents */}
         <div className="col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>
@@ -30,7 +41,6 @@ export default function DashboardView() {
           </div>
         </div>
 
-        {/* Right: Activity feed */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>
@@ -50,14 +60,13 @@ export default function DashboardView() {
         </div>
       </div>
 
-      {/* Projects */}
       <div>
         <h2 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: "var(--text-secondary)" }}>
           Projects
         </h2>
         <div className="grid grid-cols-2 gap-4">
           {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+            <ProjectCard key={project.id} project={project} agents={agents} />
           ))}
         </div>
       </div>

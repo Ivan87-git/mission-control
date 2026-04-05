@@ -1,0 +1,27 @@
+
+const BASE = "";
+
+async function fetchJson<T>(url: string): Promise<T> {
+  const res = await fetch(`${BASE}${url}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export async function postJson<T>(url: string, body: Record<string, unknown>): Promise<T> {
+  const res = await fetch(`${BASE}${url}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export const api = {
+  getAgents: () => fetchJson<import("./types").Agent[]>("/api/agents"),
+  getProjects: () => fetchJson<import("./types").Project[]>("/api/projects"),
+  getTasks: (projectId?: string) =>
+    fetchJson<import("./types").Task[]>(`/api/tasks${projectId ? `?project_id=${projectId}` : ""}`),
+  getActivity: (limit = 20) => fetchJson<import("./types").ActivityItem[]>(`/api/activity?limit=${limit}`),
+  getStats: () => fetchJson<import("./types").Stats>("/api/stats"),
+};

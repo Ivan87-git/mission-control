@@ -1,23 +1,18 @@
 
-import { agents, projects, tasks } from "@/lib/mock-data";
+import { Stats } from "@/lib/types";
 import { Bot, FolderKanban, ListTodo, Zap } from "lucide-react";
 
-export default function StatsBar() {
-  const activeAgents = agents.filter((a) => a.status === "active").length;
-  const activeProjects = projects.filter((p) => p.status === "active").length;
-  const inProgressTasks = tasks.filter((t) => t.status === "in_progress").length;
-  const totalCompleted = agents.reduce((sum, a) => sum + a.tasksCompleted, 0);
-
-  const stats = [
-    { label: "Active Agents", value: `${activeAgents}/${agents.length}`, icon: Bot, color: "#22c55e" },
-    { label: "Projects", value: activeProjects.toString(), icon: FolderKanban, color: "#4f8fff" },
-    { label: "In Progress", value: inProgressTasks.toString(), icon: ListTodo, color: "#eab308" },
-    { label: "Total Completed", value: totalCompleted.toLocaleString(), icon: Zap, color: "#a855f7" },
+export default function StatsBar({ stats }: { stats: Stats }) {
+  const items = [
+    { label: "Active Agents", value: `${stats.active_agents}/${stats.total_agents}`, icon: Bot, color: "#22c55e" },
+    { label: "Projects", value: stats.active_projects.toString(), icon: FolderKanban, color: "#4f8fff" },
+    { label: "In Progress", value: stats.in_progress_tasks.toString(), icon: ListTodo, color: "#eab308" },
+    { label: "Total Completed", value: (stats.total_completed || 0).toLocaleString(), icon: Zap, color: "#a855f7" },
   ];
 
   return (
     <div className="grid grid-cols-4 gap-4">
-      {stats.map((stat) => (
+      {items.map((stat) => (
         <div
           key={stat.label}
           className="rounded-xl p-4 flex items-center gap-4"
