@@ -1,6 +1,6 @@
 
 import { Task, Agent } from "@/lib/types";
-import { Flag } from "lucide-react";
+import ExpandableTaskCard from "./ExpandableTaskCard";
 
 const columns = [
   { id: "backlog", label: "Backlog", color: "#6b7280" },
@@ -8,13 +8,6 @@ const columns = [
   { id: "review", label: "Review", color: "#eab308" },
   { id: "done", label: "Done", color: "#22c55e" },
 ];
-
-const priorityColors: Record<string, string> = {
-  low: "#6b7280",
-  medium: "#4f8fff",
-  high: "#eab308",
-  critical: "#ef4444",
-};
 
 export default function TaskBoard({ tasks, agents }: { tasks: Task[]; agents: Agent[] }) {
   return (
@@ -38,30 +31,7 @@ export default function TaskBoard({ tasks, agents }: { tasks: Task[]; agents: Ag
             <div className="flex-1 space-y-2">
               {colTasks.map((task) => {
                 const agent = agents.find((a) => a.id === task.assigned_agent);
-                return (
-                  <div
-                    key={task.id}
-                    className="rounded-lg p-3 cursor-pointer hover:scale-[1.02] transition-all"
-                    style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
-                  >
-                    <div className="text-xs font-medium mb-2" style={{ color: "var(--text-primary)" }}>
-                      {task.title}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1">
-                        <Flag size={10} style={{ color: priorityColors[task.priority] }} />
-                        <span className="text-[10px] capitalize" style={{ color: priorityColors[task.priority] }}>
-                          {task.priority}
-                        </span>
-                      </div>
-                      {agent && (
-                        <span className="text-xs" title={agent.name}>
-                          {agent.avatar}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
+                return <ExpandableTaskCard key={task.id} task={task} agent={agent} />;
               })}
             </div>
           </div>

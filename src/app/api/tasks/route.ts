@@ -26,8 +26,8 @@ export async function POST(req: NextRequest) {
   const db = getDb();
   const id = body.id || uuid();
 
-  db.prepare(`INSERT INTO tasks (id, title, project_id, assigned_agent, status, priority) VALUES (?, ?, ?, ?, ?, ?)`)
-    .run(id, body.title, body.project_id || null, body.assigned_agent || null, body.status || "backlog", body.priority || "medium");
+  db.prepare(`INSERT INTO tasks (id, title, project_id, assigned_agent, status, priority, content, flag) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+    .run(id, body.title, body.project_id || null, body.assigned_agent || null, body.status || "backlog", body.priority || "medium", body.content || null, body.flag || null);
 
   return NextResponse.json({ id, success: true }, { status: 201 });
 }

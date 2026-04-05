@@ -34,6 +34,8 @@ export interface Task {
   status: "backlog" | "in_progress" | "review" | "done";
   priority: "low" | "medium" | "high" | "critical";
   created_at: string;
+  content?: string;
+  flag?: string | null;
 }
 
 export interface ActivityItem {

@@ -17,6 +17,7 @@ export function getDb(): Database.Database {
     db.pragma("journal_mode = WAL");
     db.pragma("foreign_keys = ON");
     initSchema(db);
+    runMigrations(db);
   }
   return db;
 }
@@ -80,4 +81,17 @@ function initSchema(db: Database.Database) {
       FOREIGN KEY (project_id) REFERENCES projects(id)
     );
   `);
+}
+
+function runMigrations(db: Database.Database) {
+  // Safely add new columns to existing tables
+  const cols = db.prepare("PRAGMA table_info(tasks)").all() as { name: string }[];
+  const colNames = cols.map((c) => c.name);
+
+  if (!colNames.includes("content")) {
+    db.exec("ALTER TABLE tasks ADD COLUMN content TEXT");
+  }
+  if (!colNames.includes("flag")) {
+    db.exec("ALTER TABLE tasks ADD COLUMN flag TEXT");
+  }
 }
