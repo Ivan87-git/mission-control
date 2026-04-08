@@ -17,6 +17,16 @@ export async function postJson<T>(url: string, body: Record<string, unknown>): P
   return res.json();
 }
 
+async function patchJson<T>(url: string, body: Record<string, unknown>): Promise<T> {
+  const res = await fetch(`${BASE}${url}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
 export const api = {
   getAgents: () => fetchJson<import("./types").Agent[]>("/api/agents"),
   getProjects: () => fetchJson<import("./types").Project[]>("/api/projects"),
@@ -24,4 +34,6 @@ export const api = {
     fetchJson<import("./types").Task[]>(`/api/tasks${projectId ? `?project_id=${projectId}` : ""}`),
   getActivity: (limit = 20) => fetchJson<import("./types").ActivityItem[]>(`/api/activity?limit=${limit}`),
   getStats: () => fetchJson<import("./types").Stats>("/api/stats"),
+  updateTask: (id: string, body: Record<string, unknown>) =>
+    patchJson<import("./types").Task>(`/api/tasks/${id}`, body),
 };

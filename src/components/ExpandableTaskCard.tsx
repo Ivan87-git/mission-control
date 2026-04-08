@@ -1,80 +1,98 @@
 "use client";
 
-import { useState } from "react";
 import { Task, Agent } from "@/lib/types";
-import { Flag, ChevronDown } from "lucide-react";
+import { Flag, GripVertical } from "lucide-react";
 
-const priorityColors: Record<string, string> = {
+const priorityBorderColors: Record<string, string> = {
+  low: "#4b5563",
+  medium: "#4f8fff",
+  high: "#eab308",
+  critical: "#ef4444",
+};
+
+const priorityTextColors: Record<string, string> = {
   low: "#6b7280",
   medium: "#4f8fff",
   high: "#eab308",
   critical: "#ef4444",
 };
 
-export default function ExpandableTaskCard({ task, agent }: { task: Task; agent?: Agent }) {
-  const [expanded, setExpanded] = useState(false);
-
+export default function ExpandableTaskCard({
+  task,
+  agent,
+  onOpenTask,
+  isDragging = false,
+}: {
+  task: Task;
+  agent?: Agent;
+  onOpenTask?: (task: Task) => void;
+  isDragging?: boolean;
+}) {
   return (
     <div
-      className="rounded-lg cursor-pointer hover:scale-[1.02] transition-all"
-      style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}
-      onClick={() => setExpanded((e) => !e)}
+      className="group rounded-lg cursor-pointer select-none transition-all duration-150"
+      style={{
+        background: isDragging ? "var(--bg-tertiary)" : "var(--bg-card)",
+        border: "1px solid var(--border)",
+        borderLeft: `3px solid ${priorityBorderColors[task.priority]}`,
+        opacity: isDragging ? 0.5 : 1,
+        boxShadow: isDragging ? "none" : undefined,
+      }}
+      onClick={() => onOpenTask?.(task)}
     >
-      <div className="p-3">
-        <div className="flex items-start gap-1.5">
-          {task.flag && (
-            <span
-              className="inline-block w-2.5 h-2.5 rounded-full mt-0.5 flex-shrink-0 animate-pulse"
-              style={{ background: "#ef4444", boxShadow: "0 0 6px 1px rgba(239,68,68,0.5)" }}
-              title="Waiting for user action"
-            />
-          )}
-          <div className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>
-            {task.title}
-          </div>
+      <div className="px-3 py-2.5 flex items-start gap-2">
+        {/* drag handle — visible on hover */}
+        <div
+          className="flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-40 transition-opacity cursor-grab"
+          style={{ color: "var(--text-secondary)" }}
+        >
+          <GripVertical size={12} />
         </div>
-        <div className="flex items-center justify-between mt-2">
-          <div className="flex items-center gap-1">
-            <Flag size={10} style={{ color: priorityColors[task.priority] }} />
-            <span className="text-[10px] capitalize" style={{ color: priorityColors[task.priority] }}>
-              {task.priority}
-            </span>
-          </div>
-          <div className="flex items-center gap-1">
-            {task.content && (
-              <ChevronDown
-                size={12}
-                className="transition-transform duration-200"
+
+        <div className="flex-1 min-w-0">
+          {/* Title row */}
+          <div className="flex items-start gap-1.5">
+            {task.flag && (
+              <span
+                className="inline-block w-2 h-2 rounded-full mt-1 flex-shrink-0 animate-pulse"
                 style={{
-                  color: "var(--text-secondary)",
-                  transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+                  background: "#ef4444",
+                  boxShadow: "0 0 5px 1px rgba(239,68,68,0.5)",
                 }}
+                title="Waiting for user"
               />
             )}
+            <span
+              className="text-xs font-medium leading-relaxed line-clamp-2"
+              style={{ color: "var(--text-primary)" }}
+            >
+              {task.title}
+            </span>
+          </div>
+
+          {/* Meta row */}
+          <div className="flex items-center justify-between mt-2">
+            <div className="flex items-center gap-1">
+              <Flag size={9} style={{ color: priorityTextColors[task.priority] }} />
+              <span
+                className="text-[10px] capitalize"
+                style={{ color: priorityTextColors[task.priority] }}
+              >
+                {task.priority}
+              </span>
+            </div>
             {agent && (
-              <span className="text-xs" title={agent.name}>
+              <span
+                className="text-[11px] leading-none"
+                title={agent.name}
+                style={{ opacity: 0.7 }}
+              >
                 {agent.avatar}
               </span>
             )}
           </div>
         </div>
       </div>
-      {expanded && task.content && (
-        <div
-          className="px-3 pb-3 text-[11px] leading-relaxed overflow-hidden animate-in fade-in"
-          style={{
-            color: "var(--text-secondary)",
-            borderTop: "1px solid var(--border)",
-            background: "var(--bg-tertiary)",
-            borderRadius: "0 0 0.5rem 0.5rem",
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-            paddingTop: "0.5rem",
-          }}
-        >
-          {task.content}
-        </div>
-      )}
     </div>
   );
 }
