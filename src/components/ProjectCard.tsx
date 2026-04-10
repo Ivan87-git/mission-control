@@ -8,6 +8,7 @@ export default function ProjectCard({ project, agents, onOpen }: { project: Proj
 
   const statusBadge: Record<string, { bg: string; color: string }> = {
     active: { bg: "rgba(34, 197, 94, 0.15)", color: "#22c55e" },
+    funnel: { bg: "rgba(124, 58, 237, 0.15)", color: "#7c3aed" },
     paused: { bg: "rgba(234, 179, 8, 0.15)", color: "#eab308" },
     completed: { bg: "rgba(79, 143, 255, 0.15)", color: "#4f8fff" },
   };

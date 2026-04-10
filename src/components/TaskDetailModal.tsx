@@ -7,6 +7,7 @@ import { useData } from "@/lib/useData";
 import { X, Flag, Layers, User, Calendar, AlignLeft, Tag, FolderTree, ListChecks, CircleHelp, FileText, MessageSquareReply } from "lucide-react";
 
 const STATUS_META: { id: Task["status"]; label: string; color: string }[] = [
+  { id: "funnel", label: "Funnel", color: "#7c3aed" },
   { id: "ideas", label: "Ideas", color: "#a855f7" },
   { id: "backlog", label: "Backlog", color: "#6b7280" },
   { id: "in_progress", label: "In Progress", color: "#4f8fff" },
@@ -20,6 +21,21 @@ const PRIORITY_META: { id: Task["priority"]; label: string; color: string }[] = 
   { id: "high", label: "High", color: "#eab308" },
   { id: "critical", label: "Critical", color: "#ef4444" },
 ];
+
+function parseContentMetadata(content?: string) {
+  const metadata: { sourceLine: string | null; control: string | null } = { sourceLine: null, control: null };
+  const noteLines: string[] = [];
+  for (const line of (content || "").split("\n")) {
+    if (line.startsWith("Source: ")) {
+      metadata.sourceLine = line;
+    } else if (line.startsWith("Control: ")) {
+      metadata.control = line.split("Control: ", 1)[1]?.trim() || null;
+    } else {
+      noteLines.push(line);
+    }
+  }
+  return { ...metadata, noteBody: noteLines.join("\n").trim() };
+}
 
 function MetaSection({ label, icon, children }: { label: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -62,15 +78,13 @@ export default function TaskDetailModal({
   const agent = agents.find((a) => a.id === task.assigned_agent);
   const currentStatus = STATUS_META.find((s) => s.id === task.status)!;
   const currentPriority = PRIORITY_META.find((p) => p.id === task.priority)!;
-  const sourceLine = (task.content || "").split("\n").find((line) => line.startsWith("Source: ")) || null;
-  const noteBody = useMemo(() => {
-    return (task.content || "")
-      .split("\n")
-      .filter((line) => !line.startsWith("Source: "))
-      .join("\n")
-      .trim();
-  }, [task.content]);
+  const parsedContent = useMemo(() => parseContentMetadata(task.content), [task.content]);
+  const sourceLine = parsedContent.sourceLine;
+  const noteBody = parsedContent.noteBody;
+  const control = parsedContent.control;
   const isManagedTask = task.id.startsWith("vault-");
+  const isPlanEditor = control === "plan-editor";
+  const canSubmitAnswer = Boolean(task.flag || isPlanEditor);
 
   const fetchCanonical = useCallback(() => {
     if (!task.project_id) return Promise.resolve(null);
@@ -107,6 +121,14 @@ export default function TaskDetailModal({
     }
   }
 
+  const answerIntro = isPlanEditor
+    ? "Use this control task to mutate the canonical plan without editing the vault directly. Supported commands: ADD | status=... | priority=... | tags=... | title=... | detail=... ; UPDATE | match=... | ... ; REMOVE | match=..."
+    : "Submit a concise answer for this specific task only. Hermes writes it back to the matching canonical task line, clears the waiting flag, and continues from there.";
+
+  const answerPlaceholder = isPlanEditor
+    ? "ADD | status=backlog | priority=high | tags=dispatch | title=Example task | detail=Short detail"
+    : "Type your answer, decision, or clarification...";
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -137,7 +159,7 @@ export default function TaskDetailModal({
               {task.title}
             </div>
             <div className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-              Board is derived from the vault{task.flag ? " · waiting for your input" : ""}
+              Board is derived from the vault{task.flag ? " · waiting for your input" : isPlanEditor ? " · plan editor control" : ""}
             </div>
           </div>
           <button
@@ -169,30 +191,30 @@ export default function TaskDetailModal({
               )}
             </section>
 
-            {task.flag && (
+            {canSubmitAnswer && (
               <section className="space-y-3">
                 <div className="flex items-center gap-2 text-sm font-medium" style={{ color: "var(--text-primary)" }}>
                   <MessageSquareReply size={15} />
-                  Answer to unblock Hermes
+                  {isPlanEditor ? "Edit plan through Hermes" : "Answer to unblock Hermes"}
                 </div>
                 <div
                   className="rounded-xl p-4 space-y-3"
-                  style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.22)" }}
+                  style={{ background: task.flag ? "rgba(239,68,68,0.06)" : "rgba(124,58,237,0.06)", border: `1px solid ${task.flag ? "rgba(239,68,68,0.22)" : "rgba(124,58,237,0.22)"}` }}
                 >
                   <div className="text-sm" style={{ color: "var(--text-primary)" }}>
-                    Submit a concise answer for this specific task only. Hermes treats it as plain text, writes it back to the matching canonical task line, clears the waiting flag, and continues from there.
+                    {answerIntro}
                   </div>
                   <textarea
                     className="w-full min-h-28 rounded-xl px-3 py-2.5 text-sm outline-none resize-y"
                     style={{ background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
-                    placeholder="Type your answer, decision, or clarification..."
-                    maxLength={1000}
+                    placeholder={answerPlaceholder}
+                    maxLength={2000}
                     value={answer}
                     onChange={(e) => setAnswer(e.target.value)}
                   />
                   <div className="flex items-center justify-between gap-3">
                     <div className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                      {hasPendingResponse ? "An answer is already pending pickup." : `${answer.length}/1000 chars · scoped to this task only.`}
+                      {hasPendingResponse ? "A response is already pending pickup." : `${answer.length}/2000 chars`}
                     </div>
                     <button
                       className="text-xs px-3 py-1.5 rounded-lg font-medium transition-opacity hover:opacity-80 disabled:opacity-40"
@@ -200,7 +222,7 @@ export default function TaskDetailModal({
                       onClick={handleSubmitAnswer}
                       disabled={submitting || !answer.trim()}
                     >
-                      {submitting ? "Submitting..." : "Submit answer"}
+                      {submitting ? "Submitting..." : isPlanEditor ? "Submit plan change" : "Submit answer"}
                     </button>
                   </div>
                 </div>
@@ -258,49 +280,41 @@ export default function TaskDetailModal({
             )}
           </div>
 
-          <div className="overflow-y-auto px-5 py-5 space-y-4" style={{ borderLeft: "1px solid var(--border)" }}>
-            <MetaSection label="Status" icon={<Tag size={11} />}>
+          <aside className="overflow-y-auto px-5 py-5 space-y-5" style={{ borderLeft: "1px solid var(--border)", background: "var(--bg-tertiary)" }}>
+            <MetaSection label="Status" icon={<Tag size={12} />}>
               <StatusPill label={currentStatus.label} color={currentStatus.color} />
             </MetaSection>
 
-            <MetaSection label="Priority" icon={<Flag size={11} />}>
+            <MetaSection label="Priority" icon={<Flag size={12} />}>
               <StatusPill label={currentPriority.label} color={currentPriority.color} />
             </MetaSection>
 
-            <MetaSection label="Assignment" icon={<User size={11} />}>
-              <div className="text-xs px-2.5 py-2 rounded-lg" style={{ background: "var(--bg-tertiary)", color: "var(--text-primary)" }}>
-                {agent ? `${agent.avatar} ${agent.name}` : "Unassigned"}
+            <MetaSection label="Project" icon={<FolderTree size={12} />}>
+              <div className="text-sm" style={{ color: "var(--text-primary)" }}>
+                {project ? project.name : "No project"}
               </div>
             </MetaSection>
 
-            <MetaSection label="Created" icon={<Calendar size={11} />}>
-              <div className="text-xs px-2.5 py-2 rounded-lg" style={{ background: "var(--bg-tertiary)", color: "var(--text-primary)" }}>
+            <MetaSection label="Assigned agent" icon={<User size={12} />}>
+              <div className="text-sm" style={{ color: "var(--text-primary)" }}>
+                {agent ? `${agent.avatar || "🤖"} ${agent.name}` : "Unassigned"}
+              </div>
+            </MetaSection>
+
+            <MetaSection label="Created" icon={<Calendar size={12} />}>
+              <div className="text-sm" style={{ color: "var(--text-primary)" }}>
                 {new Date(task.created_at).toLocaleString()}
               </div>
             </MetaSection>
 
-            <MetaSection label="Source of truth" icon={<FolderTree size={11} />}>
-              <div className="text-xs px-2.5 py-2 rounded-lg whitespace-pre-wrap" style={{ background: "var(--bg-tertiary)", color: "var(--text-primary)" }}>
-                {isManagedTask
-                  ? "Vault-managed task. Edit the canonical note in the vault; use this modal only to answer flagged tasks."
-                  : "Manual board task. Board editing is intentionally disabled to keep workflow vault-first."}
+            {isManagedTask && (
+              <div className="rounded-xl p-4 text-xs space-y-2" style={{ background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+                <div className="font-medium" style={{ color: "var(--text-primary)" }}>Canonical board item</div>
+                <div>This task is managed from the vault and may be overwritten by the next sync.</div>
+                {isPlanEditor && <div>Plan editor control: submit structured commands here to let Hermes mutate the canonical plan note.</div>}
               </div>
-            </MetaSection>
-
-            {sourceLine && (
-              <MetaSection label="Canonical source" icon={<FileText size={11} />}>
-                <div className="text-xs px-2.5 py-2 rounded-lg whitespace-pre-wrap break-words" style={{ background: "var(--bg-tertiary)", color: "var(--text-primary)" }}>
-                  {sourceLine.replace(/^Source:\s*/, "")}
-                </div>
-              </MetaSection>
             )}
-          </div>
-        </div>
-
-        <div className="flex items-center justify-end px-6 py-3" style={{ borderTop: "1px solid var(--border)" }}>
-          <button className="text-xs px-3 py-1.5 rounded-lg transition-all" style={{ color: "var(--text-secondary)" }} onClick={onClose}>
-            Close
-          </button>
+          </aside>
         </div>
       </div>
     </div>
@@ -309,21 +323,17 @@ export default function TaskDetailModal({
 
 function CanonicalSection({ title, icon, items }: { title: string; icon: React.ReactNode; items: string[] }) {
   return (
-    <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
-      <div className="flex items-center gap-2 text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+    <div className="rounded-xl p-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+      <div className="flex items-center gap-2 text-xs uppercase tracking-wider mb-2" style={{ color: "var(--text-secondary)" }}>
         {icon}
-        {title}
+        <span>{title}</span>
       </div>
       {items.length === 0 ? (
-        <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
-          None
-        </div>
+        <div className="text-sm" style={{ color: "var(--text-secondary)" }}>None.</div>
       ) : (
         <ul className="space-y-2">
-          {items.map((item, index) => (
-            <li key={`${title}-${index}`} className="text-sm" style={{ color: "var(--text-primary)" }}>
-              • {item}
-            </li>
+          {items.map((item) => (
+            <li key={item} className="text-sm" style={{ color: "var(--text-primary)" }}>• {item}</li>
           ))}
         </ul>
       )}

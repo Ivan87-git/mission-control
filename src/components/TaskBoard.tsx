@@ -4,6 +4,7 @@ import { Task, Agent, Project } from "@/lib/types";
 import ExpandableTaskCard from "./ExpandableTaskCard";
 
 const COLUMNS: { id: Task["status"]; label: string; color: string }[] = [
+  { id: "funnel", label: "Funnel", color: "#7c3aed" },
   { id: "ideas", label: "Ideas", color: "#a855f7" },
   { id: "backlog", label: "Backlog", color: "#6b7280" },
   { id: "in_progress", label: "In Progress", color: "#4f8fff" },
@@ -40,7 +41,7 @@ function Column({
   });
 
   return (
-    <div className="flex flex-col min-w-0">
+    <div className="flex flex-col min-w-[280px]">
       <div className="flex items-center gap-2 mb-3 px-1">
         <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: col.color }} />
         <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>
@@ -138,17 +139,22 @@ export default function TaskBoard({
   onOpenTask: (task: Task) => void;
 }) {
   return (
-    <div className="grid grid-cols-4 gap-4">
-      {COLUMNS.map((col) => (
-        <Column
-          key={col.id}
-          col={col}
-          tasks={tasks.filter((task) => task.status === col.id)}
-          agents={agents}
-          projects={projects}
-          onOpenTask={onOpenTask}
-        />
-      ))}
+    <div className="overflow-x-auto pb-2">
+      <div
+        className="grid gap-4"
+        style={{ gridTemplateColumns: `repeat(${COLUMNS.length}, minmax(280px, 1fr))` }}
+      >
+        {COLUMNS.map((col) => (
+          <Column
+            key={col.id}
+            col={col}
+            tasks={tasks.filter((task) => task.status === col.id)}
+            agents={agents}
+            projects={projects}
+            onOpenTask={onOpenTask}
+          />
+        ))}
+      </div>
     </div>
   );
 }

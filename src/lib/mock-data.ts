@@ -17,7 +17,7 @@ export interface Project {
   id: string;
   name: string;
   description: string;
-  status: "active" | "paused" | "completed";
+  status: "active" | "funnel" | "paused" | "completed";
   progress: number;
   agents: string[];
   taskCount: number;
@@ -30,7 +30,7 @@ export interface Task {
   title: string;
   projectId: string;
   assignedAgent: string | null;
-  status: "ideas" | "backlog" | "in_progress" | "review" | "done";
+  status: "funnel" | "ideas" | "backlog" | "in_progress" | "review" | "done";
   priority: "low" | "medium" | "high" | "critical";
   createdAt: string;
 }

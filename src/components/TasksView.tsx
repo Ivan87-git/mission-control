@@ -32,7 +32,7 @@ export default function TasksView() {
             Task Board
           </h1>
           <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-            {tasks.length} tasks · board is read-only except new tasks and answers to flagged items
+            {tasks.length} tasks · board is derived from the vault · funnel items are not dispatch-ready yet
           </p>
         </div>
         <button

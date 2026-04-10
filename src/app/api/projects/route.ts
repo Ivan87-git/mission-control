@@ -17,7 +17,7 @@ export async function GET() {
     LEFT JOIN agent_projects ap ON p.id = ap.project_id
     LEFT JOIN tasks t ON p.id = t.project_id
     GROUP BY p.id
-    ORDER BY p.status = 'active' DESC, p.name
+    ORDER BY CASE p.status WHEN 'active' THEN 0 WHEN 'funnel' THEN 1 ELSE 2 END, p.name
   `).all();
 
   return NextResponse.json(projects);
