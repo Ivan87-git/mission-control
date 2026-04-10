@@ -1,7 +1,7 @@
 "use client";
 
 import { Task, Agent } from "@/lib/types";
-import { Flag, GripVertical } from "lucide-react";
+import { Flag } from "lucide-react";
 
 const priorityBorderColors: Record<string, string> = {
   low: "#4b5563",
@@ -21,36 +21,23 @@ export default function ExpandableTaskCard({
   task,
   agent,
   onOpenTask,
-  isDragging = false,
 }: {
   task: Task;
   agent?: Agent;
   onOpenTask?: (task: Task) => void;
-  isDragging?: boolean;
 }) {
   return (
     <div
-      className="group rounded-lg cursor-pointer select-none transition-all duration-150"
+      className="group rounded-lg cursor-pointer select-none transition-all duration-150 hover:brightness-110"
       style={{
-        background: isDragging ? "var(--bg-tertiary)" : "var(--bg-card)",
+        background: "var(--bg-card)",
         border: "1px solid var(--border)",
         borderLeft: `3px solid ${priorityBorderColors[task.priority]}`,
-        opacity: isDragging ? 0.5 : 1,
-        boxShadow: isDragging ? "none" : undefined,
       }}
       onClick={() => onOpenTask?.(task)}
     >
       <div className="px-3 py-2.5 flex items-start gap-2">
-        {/* drag handle — visible on hover */}
-        <div
-          className="flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-40 transition-opacity cursor-grab"
-          style={{ color: "var(--text-secondary)" }}
-        >
-          <GripVertical size={12} />
-        </div>
-
         <div className="flex-1 min-w-0">
-          {/* Title row */}
           <div className="flex items-start gap-1.5">
             {task.flag && (
               <span
@@ -70,7 +57,6 @@ export default function ExpandableTaskCard({
             </span>
           </div>
 
-          {/* Meta row */}
           <div className="flex items-center justify-between mt-2">
             <div className="flex items-center gap-1">
               <Flag size={9} style={{ color: priorityTextColors[task.priority] }} />

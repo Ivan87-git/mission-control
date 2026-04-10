@@ -20,20 +20,19 @@ export default function TasksView() {
       </div>
     );
 
-  // When a task is saved (via modal or DnD), refresh the board
-  function handleTaskUpdated(_updated: Task) {
+  function handleTaskUpdated(_updated?: Task) {
     refreshTasks();
   }
 
   return (
     <div className="space-y-6 h-full">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
             Task Board
           </h1>
           <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-            {tasks.length} tasks · drag to move between columns · click to open
+            {tasks.length} tasks · board is read-only except new tasks and answers to flagged items
           </p>
         </div>
         <button
@@ -44,13 +43,7 @@ export default function TasksView() {
         </button>
       </div>
 
-      <TaskBoard
-        tasks={tasks}
-        agents={agents}
-        projects={projects}
-        onOpenTask={setSelectedTask}
-        onTaskUpdated={handleTaskUpdated}
-      />
+      <TaskBoard tasks={tasks} agents={agents} projects={projects} onOpenTask={setSelectedTask} />
 
       {selectedTask && (
         <TaskDetailModal
@@ -58,10 +51,7 @@ export default function TasksView() {
           agents={agents}
           projects={projects}
           onClose={() => setSelectedTask(null)}
-          onSaved={(updated) => {
-            setSelectedTask(null);
-            handleTaskUpdated(updated);
-          }}
+          onSaved={() => handleTaskUpdated()}
         />
       )}
     </div>

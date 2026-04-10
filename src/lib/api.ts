@@ -34,8 +34,15 @@ export const api = {
     fetchJson<import("./types").ProjectCanonicalData>(`/api/projects/${id}/vault`),
   getTasks: (projectId?: string) =>
     fetchJson<import("./types").Task[]>(`/api/tasks${projectId ? `?project_id=${projectId}` : ""}`),
+  getTask: (id: string) => fetchJson<import("./types").Task>(`/api/tasks/${id}`),
+  getTaskResponses: (taskId: string) =>
+    fetchJson<import("./types").TaskResponse[]>(`/api/tasks/${taskId}/responses`),
+  submitTaskResponse: (taskId: string, body: Record<string, unknown>) =>
+    postJson<import("./types").TaskResponse>(`/api/tasks/${taskId}/responses`, body),
   getActivity: (limit = 20) => fetchJson<import("./types").ActivityItem[]>(`/api/activity?limit=${limit}`),
   getStats: () => fetchJson<import("./types").Stats>("/api/stats"),
   updateTask: (id: string, body: Record<string, unknown>) =>
     patchJson<import("./types").Task>(`/api/tasks/${id}`, body),
+  updateTaskResponse: (id: string, body: Record<string, unknown>) =>
+    patchJson<import("./types").TaskResponse>(`/api/task-responses/${id}`, body),
 };

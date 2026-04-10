@@ -64,7 +64,7 @@ export default function AgentCard({ agent }: { agent: Agent }) {
   );
 }
 
-function formatTimeAgo(iso: string): string {
+function formatTimeAgo(iso?: string | null): string {
   if (!iso) return "never";
   const diff = Date.now() - new Date(iso).getTime();
   if (diff < 60000) return "just now";

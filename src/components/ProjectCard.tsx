@@ -3,7 +3,7 @@ import { Project, Agent } from "@/lib/types";
 import { Users, ListTodo } from "lucide-react";
 
 export default function ProjectCard({ project, agents, onOpen }: { project: Project; agents?: Agent[]; onOpen?: (project: Project) => void }) {
-  const agentIds = project.agent_ids ? project.agent_ids.split(",") : [];
+  const agentIds = Array.isArray(project.agent_ids) ? project.agent_ids : [];
   const projectAgents = agents ? agents.filter((a) => agentIds.includes(a.id)) : [];
 
   const statusBadge: Record<string, { bg: string; color: string }> = {

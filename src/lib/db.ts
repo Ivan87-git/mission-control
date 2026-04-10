@@ -80,11 +80,25 @@ function initSchema(db: Database.Database) {
       FOREIGN KEY (agent_id) REFERENCES agents(id),
       FOREIGN KEY (project_id) REFERENCES projects(id)
     );
+
+    CREATE TABLE IF NOT EXISTS task_responses (
+      id TEXT PRIMARY KEY,
+      task_id TEXT NOT NULL,
+      response_text TEXT NOT NULL,
+      created_by TEXT NOT NULL DEFAULT 'Ivan',
+      status TEXT NOT NULL DEFAULT 'pending',
+      processing_note TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      processed_at TEXT,
+      FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_task_responses_task_id ON task_responses(task_id);
+    CREATE INDEX IF NOT EXISTS idx_task_responses_status ON task_responses(status);
   `);
 }
 
 function runMigrations(db: Database.Database) {
-  // Safely add new columns to existing tables
   const cols = db.prepare("PRAGMA table_info(tasks)").all() as { name: string }[];
   const colNames = cols.map((c) => c.name);
 
@@ -94,4 +108,21 @@ function runMigrations(db: Database.Database) {
   if (!colNames.includes("flag")) {
     db.exec("ALTER TABLE tasks ADD COLUMN flag TEXT");
   }
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS task_responses (
+      id TEXT PRIMARY KEY,
+      task_id TEXT NOT NULL,
+      response_text TEXT NOT NULL,
+      created_by TEXT NOT NULL DEFAULT 'Ivan',
+      status TEXT NOT NULL DEFAULT 'pending',
+      processing_note TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      processed_at TEXT,
+      FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_task_responses_task_id ON task_responses(task_id);
+    CREATE INDEX IF NOT EXISTS idx_task_responses_status ON task_responses(status);
+  `);
 }

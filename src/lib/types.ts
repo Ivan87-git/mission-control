@@ -1,29 +1,29 @@
-
 export interface Agent {
   id: string;
   name: string;
-  status: "active" | "idle" | "offline" | "error";
-  current_task: string | null;
-  project_id: string | null;
-  model: string;
-  provider: string;
-  uptime: string;
-  tasks_completed: number;
-  last_seen: string;
-  avatar: string;
-  project_ids?: string;
+  status: "active" | "idle" | "offline";
+  current_task?: string;
+  project_id?: string;
+  model?: string;
+  provider?: string;
+  uptime?: string;
+  tasks_completed?: number;
+  last_seen?: string;
+  avatar?: string;
 }
 
 export interface Project {
   id: string;
   name: string;
-  description: string;
-  status: "active" | "paused" | "completed";
+  description?: string;
+  status: "active" | "completed";
   progress: number;
   color: string;
-  agent_ids?: string;
-  task_count: number;
-  completed_tasks: number;
+  created_at: string;
+  updated_at: string;
+  agent_ids?: string[] | null;
+  task_count?: number;
+  completed_tasks?: number;
 }
 
 export interface ProjectCanonicalData {
@@ -43,13 +43,25 @@ export interface ProjectCanonicalData {
 export interface Task {
   id: string;
   title: string;
-  project_id: string;
+  project_id: string | null;
   assigned_agent: string | null;
   status: "ideas" | "backlog" | "in_progress" | "review" | "done";
   priority: "low" | "medium" | "high" | "critical";
   created_at: string;
+  updated_at?: string;
   content?: string;
   flag?: string | null;
+}
+
+export interface TaskResponse {
+  id: string;
+  task_id: string;
+  response_text: string;
+  created_by: string;
+  status: "pending" | "processed" | "failed";
+  processing_note?: string | null;
+  created_at: string;
+  processed_at?: string | null;
 }
 
 export interface ActivityItem {
