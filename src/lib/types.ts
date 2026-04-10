@@ -26,12 +26,26 @@ export interface Project {
   completed_tasks: number;
 }
 
+export interface ProjectCanonicalData {
+  project_id: string;
+  vault_slug: string;
+  vault_overview_path: string;
+  vault_current_state_path: string;
+  vault_next_actions_path: string;
+  vault_open_questions_path: string;
+  goal: string;
+  status: string;
+  summary: string;
+  next_actions: string[];
+  open_questions: string[];
+}
+
 export interface Task {
   id: string;
   title: string;
   project_id: string;
   assigned_agent: string | null;
-  status: "backlog" | "in_progress" | "review" | "done";
+  status: "ideas" | "backlog" | "in_progress" | "review" | "done";
   priority: "low" | "medium" | "high" | "critical";
   created_at: string;
   content?: string;

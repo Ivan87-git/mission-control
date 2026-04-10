@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Task, Agent, Project } from "@/lib/types";
+import { useState, useEffect, useCallback } from "react";
+import { Task, Agent, Project, ProjectCanonicalData } from "@/lib/types";
 import { api } from "@/lib/api";
-import { X, Flag, Layers, User, Calendar, AlignLeft, Tag } from "lucide-react";
+import { useData } from "@/lib/useData";
+import { X, Flag, Layers, User, Calendar, AlignLeft, Tag, FolderTree, ListChecks, CircleHelp, FileText } from "lucide-react";
 
 const STATUSES: { id: Task["status"]; label: string; color: string }[] = [
+  { id: "ideas", label: "Ideas", color: "#a855f7" },
   { id: "backlog", label: "Backlog", color: "#6b7280" },
   { id: "in_progress", label: "In Progress", color: "#4f8fff" },
   { id: "review", label: "Review", color: "#eab308" },
@@ -44,6 +46,12 @@ export default function TaskDetailModal({
   const agent = agents.find((a) => a.id === task.assigned_agent);
   const currentStatus = STATUSES.find((s) => s.id === status)!;
   const currentPriority = PRIORITIES.find((p) => p.id === priority)!;
+  const fetchCanonical = useCallback(() => {
+    if (!task.project_id) throw new Error("No project");
+    return api.getProjectCanonical(task.project_id);
+  }, [task.project_id]);
+  const { data: canonical } = useData<ProjectCanonicalData>(fetchCanonical, 30000);
+  const sourceLine = (task.content || "").split("\n").find((line) => line.startsWith("Source: ")) || null;
 
   // mark dirty on any change
   useEffect(() => {
@@ -151,6 +159,27 @@ export default function TaskDetailModal({
               onChange={(e) => setContent(e.target.value)}
               placeholder="Add notes, steps, or context…"
             />
+
+            {(sourceLine || canonical) && (
+              <div className="mt-5 space-y-3">
+                {sourceLine && (
+                  <CanonicalBox icon={<FileText size={12} />} title="Source Note">
+                    <div className="text-xs" style={{ color: "var(--text-primary)" }}>{sourceLine.replace(/^Source:\s*/, "")}</div>
+                  </CanonicalBox>
+                )}
+                {canonical?.summary && (
+                  <CanonicalBox icon={<FolderTree size={12} />} title="Canonical Summary">
+                    <div className="text-sm whitespace-pre-wrap" style={{ color: "var(--text-primary)" }}>{canonical.summary}</div>
+                  </CanonicalBox>
+                )}
+                {canonical?.next_actions?.length ? (
+                  <CanonicalListBox icon={<ListChecks size={12} />} title="Canonical Next Actions" items={canonical.next_actions.slice(0, 3)} />
+                ) : null}
+                {canonical?.open_questions?.length ? (
+                  <CanonicalListBox icon={<CircleHelp size={12} />} title="Canonical Open Questions" items={canonical.open_questions.slice(0, 2)} />
+                ) : null}
+              </div>
+            )}
           </div>
 
           {/* Divider */}
@@ -317,7 +346,7 @@ function MetaSection({
   return (
     <div className="flex flex-col gap-0.5">
       <div
-        className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-medium"
+        className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider"
         style={{ color: "var(--text-secondary)" }}
       >
         {icon}
@@ -325,5 +354,29 @@ function MetaSection({
       </div>
       {children}
     </div>
+  );
+}
+
+function CanonicalBox({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-lg px-3 py-3" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+      <div className="flex items-center gap-1.5 mb-2 text-[10px] font-medium uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>
+        {icon}
+        {title}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function CanonicalListBox({ icon, title, items }: { icon: React.ReactNode; title: string; items: string[] }) {
+  return (
+    <CanonicalBox icon={icon} title={title}>
+      <ul className="space-y-1.5">
+        {items.map((item) => (
+          <li key={item} className="text-sm" style={{ color: "var(--text-primary)" }}>• {item}</li>
+        ))}
+      </ul>
+    </CanonicalBox>
   );
 }

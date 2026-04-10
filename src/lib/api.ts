@@ -30,6 +30,8 @@ async function patchJson<T>(url: string, body: Record<string, unknown>): Promise
 export const api = {
   getAgents: () => fetchJson<import("./types").Agent[]>("/api/agents"),
   getProjects: () => fetchJson<import("./types").Project[]>("/api/projects"),
+  getProjectCanonical: (id: string) =>
+    fetchJson<import("./types").ProjectCanonicalData>(`/api/projects/${id}/vault`),
   getTasks: (projectId?: string) =>
     fetchJson<import("./types").Task[]>(`/api/tasks${projectId ? `?project_id=${projectId}` : ""}`),
   getActivity: (limit = 20) => fetchJson<import("./types").ActivityItem[]>(`/api/activity?limit=${limit}`),

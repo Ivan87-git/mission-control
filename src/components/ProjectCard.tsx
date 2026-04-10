@@ -2,7 +2,7 @@
 import { Project, Agent } from "@/lib/types";
 import { Users, ListTodo } from "lucide-react";
 
-export default function ProjectCard({ project, agents }: { project: Project; agents?: Agent[] }) {
+export default function ProjectCard({ project, agents, onOpen }: { project: Project; agents?: Agent[]; onOpen?: (project: Project) => void }) {
   const agentIds = project.agent_ids ? project.agent_ids.split(",") : [];
   const projectAgents = agents ? agents.filter((a) => agentIds.includes(a.id)) : [];
 
@@ -22,6 +22,7 @@ export default function ProjectCard({ project, agents }: { project: Project; age
         border: "1px solid var(--border)",
         borderTop: `3px solid ${project.color}`,
       }}
+      onClick={() => onOpen?.(project)}
     >
       <div className="flex items-start justify-between mb-3">
         <div>

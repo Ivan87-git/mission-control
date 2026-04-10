@@ -1,18 +1,21 @@
 
 "use client";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import StatsBar from "./StatsBar";
 import AgentCard from "./AgentCard";
 import ProjectCard from "./ProjectCard";
+import ProjectDetailModal from "./ProjectDetailModal";
 import ActivityFeed from "./ActivityFeed";
 import { api } from "@/lib/api";
 import { useData } from "@/lib/useData";
+import { Project } from "@/lib/types";
 
 export default function DashboardView() {
   const { data: stats } = useData(useCallback(() => api.getStats(), []), 10000);
   const { data: agents } = useData(useCallback(() => api.getAgents(), []), 10000);
   const { data: projects } = useData(useCallback(() => api.getProjects(), []), 10000);
   const { data: activities } = useData(useCallback(() => api.getActivity(10), []), 5000);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   if (!stats || !agents || !projects || !activities) {
     return <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Loading...</div>;
@@ -66,10 +69,11 @@ export default function DashboardView() {
         </h2>
         <div className="grid grid-cols-2 gap-4">
           {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} agents={agents} />
+            <ProjectCard key={project.id} project={project} agents={agents} onOpen={setSelectedProject} />
           ))}
         </div>
       </div>
+      {selectedProject && <ProjectDetailModal project={selectedProject} onClose={() => setSelectedProject(null)} />}
     </div>
   );
 }
