@@ -19,6 +19,7 @@ import ExpandableTaskCard from "./ExpandableTaskCard";
 import { api } from "@/lib/api";
 
 const COLUMNS: { id: Task["status"]; label: string; color: string }[] = [
+  { id: "ideas", label: "Ideas", color: "#a855f7" },
   { id: "backlog", label: "Backlog", color: "#6b7280" },
   { id: "in_progress", label: "In Progress", color: "#4f8fff" },
   { id: "review", label: "Review", color: "#eab308" },

@@ -30,7 +30,7 @@ export interface Task {
   title: string;
   projectId: string;
   assignedAgent: string | null;
-  status: "backlog" | "in_progress" | "review" | "done";
+  status: "ideas" | "backlog" | "in_progress" | "review" | "done";
   priority: "low" | "medium" | "high" | "critical";
   createdAt: string;
 }
