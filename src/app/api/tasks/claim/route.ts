@@ -43,7 +43,6 @@ export async function POST(req: NextRequest) {
         UPDATE tasks
         SET status = 'assigned',
             lifecycle_status = ?,
-            assigned_agent = COALESCE(assigned_agent, ?),
             lease_owner = ?,
             lease_expires_at = datetime('now', ?),
             waiting_for_input = ?,
@@ -56,7 +55,6 @@ export async function POST(req: NextRequest) {
         WHERE id = ?
       `).run(
         patch.lifecycle_status,
-        leaseOwner,
         leaseOwner,
         `+${leaseSeconds} seconds`,
         patch.waiting_for_input,
