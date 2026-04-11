@@ -40,7 +40,7 @@ export interface ProjectCanonicalData {
   open_questions: string[];
 }
 
-export type TaskBoardStatus = "funnel" | "ideas" | "backlog" | "in_progress" | "review" | "done";
+export type TaskBoardStatus = "funnel" | "ideas" | "backlog" | "assigned" | "in_progress" | "review" | "blocked" | "failed" | "done";
 export type TaskLifecycleStatus = "pending" | "ready" | "active" | "blocked" | "waiting_user" | "reviewing" | "completed" | "cancelled";
 export type TaskEventType = "created" | "updated" | "board_status_changed" | "lifecycle_changed" | "response_submitted" | "run_linked" | "note";
 

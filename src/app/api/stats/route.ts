@@ -8,21 +8,21 @@ export async function GET() {
   const agentStats = db.prepare(`
     SELECT
       COUNT(*) as total_agents,
-      SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active_agents,
-      SUM(tasks_completed) as total_completed
+      COALESCE(SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END), 0) as active_agents,
+      COALESCE(SUM(tasks_completed), 0) as total_completed
     FROM agents
   `).get() as { total_agents: number; active_agents: number; total_completed: number };
 
   const projectStats = db.prepare(`
     SELECT COUNT(*) as total_projects,
-      SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active_projects
+      COALESCE(SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END), 0) as active_projects
     FROM projects
   `).get() as { total_projects: number; active_projects: number };
 
   const taskStats = db.prepare(`
     SELECT
-      SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress,
-      SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END) as done
+      COALESCE(SUM(CASE WHEN status IN ('assigned', 'in_progress', 'review') THEN 1 ELSE 0 END), 0) as in_progress,
+      COALESCE(SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END), 0) as done
     FROM tasks
   `).get() as { in_progress: number; done: number };
 

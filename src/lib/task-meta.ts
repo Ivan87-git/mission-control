@@ -4,8 +4,11 @@ export const TASK_STATUS_META: { id: TaskBoardStatus; label: string; color: stri
   { id: "funnel", label: "Funnel", color: "#7c3aed" },
   { id: "ideas", label: "Ideas", color: "#a855f7" },
   { id: "backlog", label: "Backlog", color: "#6b7280" },
+  { id: "assigned", label: "Assigned", color: "#38bdf8" },
   { id: "in_progress", label: "In Progress", color: "#4f8fff" },
   { id: "review", label: "Review", color: "#eab308" },
+  { id: "blocked", label: "Blocked", color: "#f97316" },
+  { id: "failed", label: "Failed", color: "#ef4444" },
   { id: "done", label: "Done", color: "#22c55e" },
 ];
 
@@ -35,10 +38,15 @@ export function inferLifecycleStatus(status: TaskBoardStatus, flag?: string | nu
       return "pending";
     case "backlog":
       return "ready";
+    case "assigned":
     case "in_progress":
       return "active";
     case "review":
       return "reviewing";
+    case "blocked":
+      return flag == "red" ? "waiting_user" : "blocked";
+    case "failed":
+      return "blocked";
     case "done":
       return "completed";
     default:

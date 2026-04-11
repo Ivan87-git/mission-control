@@ -68,6 +68,10 @@ function initSchema(db: Database.Database) {
       waiting_for_input INTEGER NOT NULL DEFAULT 0,
       run_id TEXT,
       source_task_id TEXT,
+      lease_owner TEXT,
+      lease_expires_at TEXT,
+      attempt_count INTEGER NOT NULL DEFAULT 0,
+      last_error TEXT,
       content TEXT,
       flag TEXT,
       FOREIGN KEY (project_id) REFERENCES projects(id),
@@ -124,6 +128,7 @@ function initSchema(db: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_task_events_created_at ON task_events(created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_tasks_lifecycle_status ON tasks(lifecycle_status);
     CREATE INDEX IF NOT EXISTS idx_tasks_run_id ON tasks(run_id);
+    CREATE INDEX IF NOT EXISTS idx_tasks_lease_expires_at ON tasks(lease_expires_at);
   `);
 }
 
@@ -146,6 +151,10 @@ function runMigrations(db: Database.Database) {
   addColumn("waiting_for_input", "ALTER TABLE tasks ADD COLUMN waiting_for_input INTEGER NOT NULL DEFAULT 0");
   addColumn("run_id", "ALTER TABLE tasks ADD COLUMN run_id TEXT");
   addColumn("source_task_id", "ALTER TABLE tasks ADD COLUMN source_task_id TEXT");
+  addColumn("lease_owner", "ALTER TABLE tasks ADD COLUMN lease_owner TEXT");
+  addColumn("lease_expires_at", "ALTER TABLE tasks ADD COLUMN lease_expires_at TEXT");
+  addColumn("attempt_count", "ALTER TABLE tasks ADD COLUMN attempt_count INTEGER NOT NULL DEFAULT 0");
+  addColumn("last_error", "ALTER TABLE tasks ADD COLUMN last_error TEXT");
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS task_events (
@@ -167,6 +176,7 @@ function runMigrations(db: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_task_events_created_at ON task_events(created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_tasks_lifecycle_status ON tasks(lifecycle_status);
     CREATE INDEX IF NOT EXISTS idx_tasks_run_id ON tasks(run_id);
+    CREATE INDEX IF NOT EXISTS idx_tasks_lease_expires_at ON tasks(lease_expires_at);
   `);
 
   db.exec(`
