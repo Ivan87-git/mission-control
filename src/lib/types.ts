@@ -62,6 +62,10 @@ export interface Task {
   waiting_for_input?: boolean;
   run_id?: string | null;
   source_task_id?: string | null;
+  lease_owner?: string | null;
+  lease_expires_at?: string | null;
+  attempt_count?: number;
+  last_error?: string | null;
   content?: string;
   flag?: string | null;
 }
