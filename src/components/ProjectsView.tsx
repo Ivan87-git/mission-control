@@ -18,8 +18,8 @@ export default function ProjectsView() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Projects</h1>
-        <button className="text-xs px-3 py-1.5 rounded-lg font-medium" style={{ background: "var(--accent-blue)", color: "white" }}>
-          + New Project
+        <button className="text-xs px-3 py-1.5 rounded-lg font-medium opacity-50 cursor-not-allowed" style={{ background: "var(--accent-blue)", color: "white" }} disabled title="Project creation still flows from canonical sources; validation build keeps this read-only.">
+          Canonical Source
         </button>
       </div>
       <div className="grid grid-cols-2 gap-4">
