@@ -39,7 +39,7 @@ export default function TasksView() {
           className="text-xs px-3 py-1.5 rounded-lg font-medium transition-opacity hover:opacity-80"
           style={{ background: "var(--accent-blue)", color: "white" }}
         >
-          + New Task
+          Open Spec
         </button>
       </div>
 

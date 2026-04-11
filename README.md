@@ -15,9 +15,10 @@ Built as a lightweight, self-hosted alternative to commercial agent dashboards. 
 
 ## Stack
 
-- Next.js 16 (App Router)
+- Next.js 15 (App Router)
 - TypeScript
-- Tailwind CSS v4
+- Tailwind CSS v3
+- `better-sqlite3@11`
 - Lucide React icons
 
 ## Getting Started

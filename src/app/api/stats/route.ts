@@ -33,6 +33,6 @@ export async function GET() {
     total_agents: agentStats.total_agents,
     active_projects: projectStats.active_projects,
     in_progress_tasks: taskStats.in_progress,
-    total_completed: agentStats.total_completed,
+    total_completed: taskStats.done,
   });
 }
