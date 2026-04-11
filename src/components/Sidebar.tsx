@@ -3,7 +3,7 @@
 import { useState } from "react";
 import {
   LayoutDashboard, FolderKanban, Bot, Activity, ListTodo,
-  Settings, ChevronLeft, ChevronRight, Zap
+  Settings, ChevronLeft, ChevronRight, Zap, PlaySquare
 } from "lucide-react";
 
 interface SidebarProps {
@@ -16,6 +16,7 @@ const navItems = [
   { id: "projects", label: "Projects", icon: FolderKanban },
   { id: "agents", label: "Agents", icon: Bot },
   { id: "tasks", label: "Task Board", icon: ListTodo },
+  { id: "runs", label: "Runs", icon: PlaySquare },
   { id: "activity", label: "Activity", icon: Activity },
 ];
 
@@ -29,7 +30,6 @@ export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
       }`}
       style={{ background: "var(--bg-secondary)", borderRight: "1px solid var(--border)" }}
     >
-      {/* Logo */}
       <div className="flex items-center gap-2 px-4 h-14 border-b" style={{ borderColor: "var(--border)" }}>
         <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg" style={{ background: "linear-gradient(135deg, #4f8fff, #a855f7)" }}>
           <Zap size={18} color="white" />
@@ -41,7 +41,6 @@ export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
         )}
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 py-3 px-2 space-y-1">
         {navItems.map((item) => {
           const isActive = activeView === item.id;
@@ -64,12 +63,8 @@ export default function Sidebar({ activeView, onViewChange }: SidebarProps) {
         })}
       </nav>
 
-      {/* Bottom */}
       <div className="px-2 pb-3 space-y-1">
-        <button
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm hover:bg-white/5 transition-all"
-          style={{ color: "var(--text-secondary)" }}
-        >
+        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm hover:bg-white/5 transition-all" style={{ color: "var(--text-secondary)" }}>
           <Settings size={18} />
           {!collapsed && <span>Settings</span>}
         </button>

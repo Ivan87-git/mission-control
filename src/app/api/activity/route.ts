@@ -1,11 +1,9 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { seedIfEmpty } from "@/lib/seed";
 import { v4 as uuid } from "uuid";
 
 export async function GET(req: NextRequest) {
-  seedIfEmpty();
   const db = getDb();
   const limit = parseInt(req.nextUrl.searchParams.get("limit") || "20");
 

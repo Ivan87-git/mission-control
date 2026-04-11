@@ -37,10 +37,16 @@ export const api = {
   getTask: (id: string) => fetchJson<import("./types").Task>(`/api/tasks/${id}`),
   getTaskResponses: (taskId: string) =>
     fetchJson<import("./types").TaskResponse[]>(`/api/tasks/${taskId}/responses`),
+  getTaskEvents: (taskId: string, limit = 30) =>
+    fetchJson<import("./types").TaskEvent[]>(`/api/task-events?task_id=${encodeURIComponent(taskId)}&limit=${limit}`),
   submitTaskResponse: (taskId: string, body: Record<string, unknown>) =>
     postJson<import("./types").TaskResponse>(`/api/tasks/${taskId}/responses`, body),
+  createTaskEvent: (body: Record<string, unknown>) =>
+    postJson<import("./types").TaskEvent>("/api/task-events", body),
   getActivity: (limit = 20) => fetchJson<import("./types").ActivityItem[]>(`/api/activity?limit=${limit}`),
   getStats: () => fetchJson<import("./types").Stats>("/api/stats"),
+  getRuns: (projectId?: string, limit = 25) =>
+    fetchJson<import("./types").RunSummary[]>(`/api/runs?limit=${limit}${projectId ? `&project_id=${encodeURIComponent(projectId)}` : ""}`),
   updateTask: (id: string, body: Record<string, unknown>) =>
     patchJson<import("./types").Task>(`/api/tasks/${id}`, body),
   updateTaskResponse: (id: string, body: Record<string, unknown>) =>

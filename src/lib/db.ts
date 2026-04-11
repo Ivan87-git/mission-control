@@ -8,7 +8,6 @@ let db: Database.Database | null = null;
 
 export function getDb(): Database.Database {
   if (!db) {
-    // Ensure data dir exists
     const fs = require("fs");
     const dir = path.dirname(DB_PATH);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -57,9 +56,20 @@ function initSchema(db: Database.Database) {
       project_id TEXT,
       assigned_agent TEXT,
       status TEXT NOT NULL DEFAULT 'backlog',
+      lifecycle_status TEXT NOT NULL DEFAULT 'ready',
       priority TEXT NOT NULL DEFAULT 'medium',
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now')),
+      started_at TEXT,
+      blocked_at TEXT,
+      waiting_for_input_at TEXT,
+      completed_at TEXT,
+      last_event_at TEXT,
+      waiting_for_input INTEGER NOT NULL DEFAULT 0,
+      run_id TEXT,
+      source_task_id TEXT,
+      content TEXT,
+      flag TEXT,
       FOREIGN KEY (project_id) REFERENCES projects(id),
       FOREIGN KEY (assigned_agent) REFERENCES agents(id)
     );
@@ -93,8 +103,27 @@ function initSchema(db: Database.Database) {
       FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
     );
 
+    CREATE TABLE IF NOT EXISTS task_events (
+      id TEXT PRIMARY KEY,
+      task_id TEXT NOT NULL,
+      actor TEXT,
+      event_type TEXT NOT NULL,
+      from_board_status TEXT,
+      to_board_status TEXT,
+      from_lifecycle_status TEXT,
+      to_lifecycle_status TEXT,
+      note TEXT,
+      payload TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
+    );
+
     CREATE INDEX IF NOT EXISTS idx_task_responses_task_id ON task_responses(task_id);
     CREATE INDEX IF NOT EXISTS idx_task_responses_status ON task_responses(status);
+    CREATE INDEX IF NOT EXISTS idx_task_events_task_id ON task_events(task_id);
+    CREATE INDEX IF NOT EXISTS idx_task_events_created_at ON task_events(created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_tasks_lifecycle_status ON tasks(lifecycle_status);
+    CREATE INDEX IF NOT EXISTS idx_tasks_run_id ON tasks(run_id);
   `);
 }
 
@@ -102,27 +131,57 @@ function runMigrations(db: Database.Database) {
   const cols = db.prepare("PRAGMA table_info(tasks)").all() as { name: string }[];
   const colNames = cols.map((c) => c.name);
 
-  if (!colNames.includes("content")) {
-    db.exec("ALTER TABLE tasks ADD COLUMN content TEXT");
-  }
-  if (!colNames.includes("flag")) {
-    db.exec("ALTER TABLE tasks ADD COLUMN flag TEXT");
-  }
+  const addColumn = (name: string, sql: string) => {
+    if (!colNames.includes(name)) db.exec(sql);
+  };
+
+  addColumn("content", "ALTER TABLE tasks ADD COLUMN content TEXT");
+  addColumn("flag", "ALTER TABLE tasks ADD COLUMN flag TEXT");
+  addColumn("lifecycle_status", "ALTER TABLE tasks ADD COLUMN lifecycle_status TEXT NOT NULL DEFAULT 'ready'");
+  addColumn("started_at", "ALTER TABLE tasks ADD COLUMN started_at TEXT");
+  addColumn("blocked_at", "ALTER TABLE tasks ADD COLUMN blocked_at TEXT");
+  addColumn("waiting_for_input_at", "ALTER TABLE tasks ADD COLUMN waiting_for_input_at TEXT");
+  addColumn("completed_at", "ALTER TABLE tasks ADD COLUMN completed_at TEXT");
+  addColumn("last_event_at", "ALTER TABLE tasks ADD COLUMN last_event_at TEXT");
+  addColumn("waiting_for_input", "ALTER TABLE tasks ADD COLUMN waiting_for_input INTEGER NOT NULL DEFAULT 0");
+  addColumn("run_id", "ALTER TABLE tasks ADD COLUMN run_id TEXT");
+  addColumn("source_task_id", "ALTER TABLE tasks ADD COLUMN source_task_id TEXT");
 
   db.exec(`
-    CREATE TABLE IF NOT EXISTS task_responses (
+    CREATE TABLE IF NOT EXISTS task_events (
       id TEXT PRIMARY KEY,
       task_id TEXT NOT NULL,
-      response_text TEXT NOT NULL,
-      created_by TEXT NOT NULL DEFAULT 'Ivan',
-      status TEXT NOT NULL DEFAULT 'pending',
-      processing_note TEXT,
+      actor TEXT,
+      event_type TEXT NOT NULL,
+      from_board_status TEXT,
+      to_board_status TEXT,
+      from_lifecycle_status TEXT,
+      to_lifecycle_status TEXT,
+      note TEXT,
+      payload TEXT,
       created_at TEXT DEFAULT (datetime('now')),
-      processed_at TEXT,
       FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
     );
 
-    CREATE INDEX IF NOT EXISTS idx_task_responses_task_id ON task_responses(task_id);
-    CREATE INDEX IF NOT EXISTS idx_task_responses_status ON task_responses(status);
+    CREATE INDEX IF NOT EXISTS idx_task_events_task_id ON task_events(task_id);
+    CREATE INDEX IF NOT EXISTS idx_task_events_created_at ON task_events(created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_tasks_lifecycle_status ON tasks(lifecycle_status);
+    CREATE INDEX IF NOT EXISTS idx_tasks_run_id ON tasks(run_id);
+  `);
+
+  db.exec(`
+    UPDATE tasks
+    SET lifecycle_status = CASE
+      WHEN flag = 'red' THEN 'waiting_user'
+      WHEN status = 'done' THEN 'completed'
+      WHEN status = 'review' THEN 'reviewing'
+      WHEN status = 'in_progress' THEN 'active'
+      WHEN status = 'backlog' THEN 'ready'
+      ELSE 'pending'
+    END
+    WHERE lifecycle_status IS NULL OR lifecycle_status = '' OR lifecycle_status = 'ready';
+
+    UPDATE tasks
+    SET waiting_for_input = CASE WHEN flag = 'red' OR lifecycle_status = 'waiting_user' THEN 1 ELSE 0 END;
   `);
 }

@@ -1,10 +1,8 @@
 
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { seedIfEmpty } from "@/lib/seed";
 
 export async function GET() {
-  seedIfEmpty();
   const db = getDb();
 
   const agentStats = db.prepare(`

@@ -2,6 +2,7 @@
 
 import { Task, Agent } from "@/lib/types";
 import { Flag } from "lucide-react";
+import { TASK_LIFECYCLE_META } from "@/lib/task-meta";
 
 const priorityBorderColors: Record<string, string> = {
   low: "#4b5563",
@@ -26,6 +27,8 @@ export default function ExpandableTaskCard({
   agent?: Agent;
   onOpenTask?: (task: Task) => void;
 }) {
+  const lifecycle = TASK_LIFECYCLE_META.find((item) => item.id === task.lifecycle_status);
+
   return (
     <div
       className="group rounded-lg cursor-pointer select-none transition-all duration-150 hover:brightness-110"
@@ -39,40 +42,34 @@ export default function ExpandableTaskCard({
       <div className="px-3 py-2.5 flex items-start gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-start gap-1.5">
-            {task.flag && (
+            {(task.flag || task.waiting_for_input) && (
               <span
                 className="inline-block w-2 h-2 rounded-full mt-1 flex-shrink-0 animate-pulse"
-                style={{
-                  background: "#ef4444",
-                  boxShadow: "0 0 5px 1px rgba(239,68,68,0.5)",
-                }}
+                style={{ background: "#ef4444", boxShadow: "0 0 5px 1px rgba(239,68,68,0.5)" }}
                 title="Waiting for user"
               />
             )}
-            <span
-              className="text-xs font-medium leading-relaxed line-clamp-2"
-              style={{ color: "var(--text-primary)" }}
-            >
+            <span className="text-xs font-medium leading-relaxed line-clamp-2" style={{ color: "var(--text-primary)" }}>
               {task.title}
             </span>
           </div>
 
-          <div className="flex items-center justify-between mt-2">
-            <div className="flex items-center gap-1">
-              <Flag size={9} style={{ color: priorityTextColors[task.priority] }} />
-              <span
-                className="text-[10px] capitalize"
-                style={{ color: priorityTextColors[task.priority] }}
-              >
-                {task.priority}
-              </span>
+          <div className="flex items-center justify-between mt-2 gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-1">
+                <Flag size={9} style={{ color: priorityTextColors[task.priority] }} />
+                <span className="text-[10px] capitalize" style={{ color: priorityTextColors[task.priority] }}>
+                  {task.priority}
+                </span>
+              </div>
+              {lifecycle && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full capitalize" style={{ background: `${lifecycle.color}20`, color: lifecycle.color }}>
+                  {lifecycle.label}
+                </span>
+              )}
             </div>
             {agent && (
-              <span
-                className="text-[11px] leading-none"
-                title={agent.name}
-                style={{ opacity: 0.7 }}
-              >
+              <span className="text-[11px] leading-none" title={agent.name} style={{ opacity: 0.7 }}>
                 {agent.avatar}
               </span>
             )}

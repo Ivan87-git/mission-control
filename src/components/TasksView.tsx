@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import TaskBoard from "./TaskBoard";
 import TaskDetailModal from "./TaskDetailModal";
 import { api } from "@/lib/api";
@@ -13,16 +13,21 @@ export default function TasksView() {
   const { data: projects } = useData(useCallback(() => api.getProjects(), []), 10000);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
-  if (!tasks || !agents || !projects)
-    return (
-      <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
-        Loading...
-      </div>
-    );
+  const planEditorTask = useMemo(
+    () => tasks?.find((task) => task.content?.includes("Control: plan-editor")) || null,
+    [tasks],
+  );
 
-  function handleTaskUpdated(_updated?: Task) {
+  if (!tasks || !agents || !projects) {
+    return <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Loading...</div>;
+  }
+
+  function handleTaskUpdated() {
     refreshTasks();
   }
+
+  const waitingCount = tasks.filter((task) => task.lifecycle_status === "waiting_user" || task.waiting_for_input).length;
+  const activeCount = tasks.filter((task) => task.lifecycle_status === "active").length;
 
   return (
     <div className="space-y-6 h-full">
@@ -32,12 +37,14 @@ export default function TasksView() {
             Task Board
           </h1>
           <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-            {tasks.length} tasks · board is derived from the vault · funnel items are not dispatch-ready yet
+            {tasks.length} tasks · {activeCount} active · {waitingCount} waiting for input · board is derived from the vault
           </p>
         </div>
         <button
-          className="text-xs px-3 py-1.5 rounded-lg font-medium transition-opacity hover:opacity-80"
+          className="text-xs px-3 py-1.5 rounded-lg font-medium transition-opacity hover:opacity-80 disabled:opacity-40"
           style={{ background: "var(--accent-blue)", color: "white" }}
+          onClick={() => planEditorTask && setSelectedTask(planEditorTask)}
+          disabled={!planEditorTask}
         >
           Open Spec
         </button>

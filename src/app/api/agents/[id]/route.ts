@@ -1,10 +1,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { seedIfEmpty } from "@/lib/seed";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  seedIfEmpty();
   const { id } = await params;
   const db = getDb();
   const agent = db.prepare("SELECT * FROM agents WHERE id = ?").get(id);

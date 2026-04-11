@@ -1,11 +1,9 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { seedIfEmpty } from "@/lib/seed";
 import { v4 as uuid } from "uuid";
 
 export async function GET() {
-  seedIfEmpty();
   const db = getDb();
   const agents = db.prepare(`
     SELECT a.*, GROUP_CONCAT(ap.project_id) as project_ids

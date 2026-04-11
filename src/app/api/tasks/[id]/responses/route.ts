@@ -2,9 +2,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { spawn } from "node:child_process";
 import { getDb } from "@/lib/db";
+import { recordTaskEvent } from "@/lib/task-events";
+import { parseTaskContentMetadata } from "@/lib/task-meta";
 import { v4 as uuid } from "uuid";
 
-const MC_RESPONSE_PROCESSOR = "/home/ivan/.hermes/scripts/process_mc_task_responses.py";
+const MC_RESPONSE_PROCESSOR = process.env.MC_RESPONSE_PROCESSOR || "/home/ivan/.hermes/scripts/process_mc_task_responses.py";
+const MC_RESPONSE_PYTHON = process.env.MC_RESPONSE_PYTHON || "/usr/bin/python3";
 const MAX_RESPONSE_LENGTH = 1000;
 
 function normalizeResponseText(value: unknown): string {
@@ -16,7 +19,7 @@ function normalizeResponseText(value: unknown): string {
 
 function triggerResponseProcessor() {
   try {
-    const child = spawn("/usr/bin/python3", [MC_RESPONSE_PROCESSOR], {
+    const child = spawn(MC_RESPONSE_PYTHON, [MC_RESPONSE_PROCESSOR], {
       detached: true,
       stdio: "ignore",
     });
@@ -40,15 +43,21 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const body = await req.json();
   const db = getDb();
 
-  const task = db.prepare("SELECT id, title, flag FROM tasks WHERE id = ?").get(taskId) as { id: string; title: string; flag: string | null } | undefined;
+  const task = db.prepare("SELECT id, title, flag, content FROM tasks WHERE id = ?").get(taskId) as
+    | { id: string; title: string; flag: string | null; content: string | null }
+    | undefined;
   if (!task) {
     return NextResponse.json({ error: "Task not found" }, { status: 404 });
   }
-  if (task.flag !== "red") {
-    return NextResponse.json({ error: "Answers are only allowed for flagged waiting-user tasks" }, { status: 400 });
-  }
   if (!String(task.id).startsWith("vault-")) {
     return NextResponse.json({ error: "Answers are only allowed for vault-managed tasks" }, { status: 400 });
+  }
+
+  const { control } = parseTaskContentMetadata(task.content || undefined);
+  const isPlanEditor = control === "plan-editor";
+  const canSubmit = task.flag === "red" || isPlanEditor;
+  if (!canSubmit) {
+    return NextResponse.json({ error: "Answers are only allowed for waiting-user or plan-editor tasks" }, { status: 400 });
   }
 
   const responseText = normalizeResponseText(body.response_text);
@@ -73,7 +82,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   ).run(id, taskId, responseText, createdBy);
 
   db.prepare(`INSERT INTO activity (id, agent_name, action, detail, type) VALUES (?, ?, ?, ?, ?)`)
-    .run(uuid(), createdBy, "answered", `Replied on task: ${task.title}`, "task");
+    .run(uuid(), createdBy, isPlanEditor ? "edited plan" : "answered", `Replied on task: ${task.title}`, "task");
+
+  recordTaskEvent(db, {
+    taskId,
+    actor: createdBy,
+    eventType: "response_submitted",
+    note: isPlanEditor ? "Submitted plan-editor command" : "Submitted answer",
+    payload: { response_id: id, response_preview: responseText.slice(0, 140) },
+  });
 
   const inserted = db.prepare("SELECT * FROM task_responses WHERE id = ?").get(id);
   triggerResponseProcessor();

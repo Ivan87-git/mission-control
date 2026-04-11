@@ -9,8 +9,8 @@ Built as a lightweight, self-hosted alternative to commercial agent dashboards. 
 - **Dashboard** — Overview with stats, active agents, live activity feed, and project cards
 - **Projects** — Track projects with progress bars, assigned agents, and task counts
 - **Agents** — Monitor agent status (active/idle/offline), current tasks, uptime, model info
-- **Task Board** — Kanban board with backlog, in-progress, review, and done columns
-- **Activity Feed** — Real-time log of all agent actions (tasks, commits, deploys, errors)
+- **Task Board** — Vault-derived kanban board with funnel, ideas, backlog, in-progress, review, and done columns
+- **Activity Feed** — Polling-based log of agent actions (tasks, commits, deploys, errors)
 - **Dark theme** — Clean, modern UI with a space-command-center aesthetic
 
 ## Stack
@@ -32,15 +32,21 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
+## Current shape
+
+- SQLite-backed operational board
+- Board is derived from canonical vault/project notes
+- Explicit task lifecycle fields plus task event history for task truthfulness
+- Polling refreshes every 10 seconds; no WebSockets yet by design
+- Task detail modal supports review, answers, structured plan-control workflows, and lifecycle history
+- Runs view reads mission-runner state snapshots directly from local JSON state files
+
 ## Roadmap
 
-- [ ] REST API for agents to report status
-- [ ] WebSocket real-time updates
-- [ ] Persistent storage (SQLite/Postgres)
-- [ ] Agent heartbeat system
-- [ ] Task assignment and drag-n-drop
-- [ ] Integration with Hermes cron jobs and sessions
-- [ ] Authentication
+- [ ] Leasing / claim semantics for dispatch
+- [ ] Run detail drill-down into logs/output files
+- [ ] Richer structured spec editing and validation
+- [ ] Optional worktree-backed execution
 
 ## License
 

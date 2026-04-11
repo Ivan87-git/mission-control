@@ -40,17 +40,44 @@ export interface ProjectCanonicalData {
   open_questions: string[];
 }
 
+export type TaskBoardStatus = "funnel" | "ideas" | "backlog" | "in_progress" | "review" | "done";
+export type TaskLifecycleStatus = "pending" | "ready" | "active" | "blocked" | "waiting_user" | "reviewing" | "completed" | "cancelled";
+export type TaskEventType = "created" | "updated" | "board_status_changed" | "lifecycle_changed" | "response_submitted" | "run_linked" | "note";
+
 export interface Task {
   id: string;
   title: string;
   project_id: string | null;
   assigned_agent: string | null;
-  status: "funnel" | "ideas" | "backlog" | "in_progress" | "review" | "done";
+  status: TaskBoardStatus;
+  lifecycle_status: TaskLifecycleStatus;
   priority: "low" | "medium" | "high" | "critical";
   created_at: string;
   updated_at?: string;
+  started_at?: string | null;
+  blocked_at?: string | null;
+  waiting_for_input_at?: string | null;
+  completed_at?: string | null;
+  last_event_at?: string | null;
+  waiting_for_input?: boolean;
+  run_id?: string | null;
+  source_task_id?: string | null;
   content?: string;
   flag?: string | null;
+}
+
+export interface TaskEvent {
+  id: string;
+  task_id: string;
+  actor?: string | null;
+  event_type: TaskEventType;
+  from_board_status?: TaskBoardStatus | null;
+  to_board_status?: TaskBoardStatus | null;
+  from_lifecycle_status?: TaskLifecycleStatus | null;
+  to_lifecycle_status?: TaskLifecycleStatus | null;
+  note?: string | null;
+  payload?: string | null;
+  created_at: string;
 }
 
 export interface TaskResponse {
@@ -71,6 +98,43 @@ export interface ActivityItem {
   detail: string;
   created_at: string;
   type: "task" | "system" | "deploy" | "error" | "commit";
+}
+
+export interface RunTaskSummary {
+  id: string;
+  title: string;
+  status: string;
+  priority?: string | null;
+  mc_task_id?: string | null;
+  source_task_id?: string | null;
+  started_at?: string | null;
+  completed_at?: string | null;
+  blocked_by_reason?: string | null;
+  unblock_condition?: string | null;
+  summary?: string | null;
+}
+
+export interface RunSummary {
+  mission_id: string;
+  mission_name: string;
+  source_file?: string | null;
+  project_id?: string | null;
+  status: string;
+  pid?: number | null;
+  started_at?: string | null;
+  updated_at: string;
+  completed_at?: string | null;
+  error?: string | null;
+  provider?: string | null;
+  model?: string | null;
+  workdir?: string | null;
+  total_tasks: number;
+  completed_tasks: number;
+  blocked_tasks: number;
+  failed_tasks: number;
+  running_tasks: number;
+  ready_tasks: number;
+  tasks: RunTaskSummary[];
 }
 
 export interface Stats {
