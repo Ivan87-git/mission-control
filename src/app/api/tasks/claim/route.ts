@@ -11,6 +11,7 @@ export async function POST(req: NextRequest) {
   const maxTasks = Math.max(1, Math.min(Number(body.max_tasks || 1), 20));
   const leaseOwner = String(body.lease_owner || body.owner || "mission-orchestrator").trim();
   const projectId = typeof body.project_id === "string" ? body.project_id : null;
+  const explicitTaskIds = Array.isArray(body.task_ids) ? body.task_ids.map((item: unknown) => String(item).trim()).filter(Boolean) : [];
   const leaseSeconds = Math.max(60, Math.min(Number(body.lease_seconds || DEFAULT_LEASE_SECONDS), 86400));
 
   const tasks = db.transaction(() => {
@@ -29,6 +30,10 @@ export async function POST(req: NextRequest) {
     if (projectId) {
       sql += " AND project_id = ?";
       params.push(projectId);
+    }
+    if (explicitTaskIds.length > 0) {
+      sql += ` AND id IN (${explicitTaskIds.map(() => '?').join(',')})`;
+      params.push(...explicitTaskIds);
     }
     sql += ` ORDER BY CASE priority WHEN 'critical' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END, created_at ASC LIMIT ?`;
     params.push(maxTasks);
