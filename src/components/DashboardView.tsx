@@ -6,6 +6,7 @@ import AgentCard from "./AgentCard";
 import ProjectCard from "./ProjectCard";
 import ProjectDetailModal from "./ProjectDetailModal";
 import ActivityFeed from "./ActivityFeed";
+import DispatcherStatusPanel from "./DispatcherStatusPanel";
 import { api } from "@/lib/api";
 import { useData } from "@/lib/useData";
 import { Project } from "@/lib/types";
@@ -62,6 +63,8 @@ export default function DashboardView() {
           </div>
         </div>
       </div>
+
+      <DispatcherStatusPanel />
 
       <div>
         <h2 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: "var(--text-secondary)" }}>

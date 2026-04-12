@@ -148,3 +148,23 @@ export interface Stats {
   in_progress_tasks: number;
   total_completed: number;
 }
+
+
+export interface ActiveRuntimeTask {
+  mission_id: string;
+  task_id: string;
+  title: string;
+  status: string;
+  started_at?: string | null;
+  blocked_by_reason?: string | null;
+}
+
+export interface DispatcherStatus {
+  dispatcher_running: boolean;
+  dispatcher_pid?: number | null;
+  dispatcher_started_at?: string | null;
+  active_missions: number;
+  active_runtime_tasks: ActiveRuntimeTask[];
+  stale_missions: { mission_id: string; status: string; pid?: number | null; reason: string }[];
+  last_dispatch_log_line?: string | null;
+}

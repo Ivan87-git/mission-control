@@ -47,6 +47,8 @@ export const api = {
   getStats: () => fetchJson<import("./types").Stats>("/api/stats"),
   getRuns: (projectId?: string, limit = 25) =>
     fetchJson<import("./types").RunSummary[]>(`/api/runs?limit=${limit}${projectId ? `&project_id=${encodeURIComponent(projectId)}` : ""}`),
+  getDispatcherStatus: () =>
+    fetchJson<import("./types").DispatcherStatus>("/api/dispatcher-status"),
   updateTask: (id: string, body: Record<string, unknown>) =>
     patchJson<import("./types").Task>(`/api/tasks/${id}`, body),
   updateTaskResponse: (id: string, body: Record<string, unknown>) =>
