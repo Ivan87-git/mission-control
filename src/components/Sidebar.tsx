@@ -3,7 +3,7 @@
 import { useState } from "react";
 import {
   LayoutDashboard, FolderKanban, Bot, Activity, ListTodo,
-  Settings, ChevronLeft, ChevronRight, Zap, PlaySquare
+  Settings, ChevronLeft, ChevronRight, Zap, PlaySquare, RadioTower
 } from "lucide-react";
 
 interface SidebarProps {
@@ -17,6 +17,7 @@ const navItems = [
   { id: "agents", label: "Agents", icon: Bot },
   { id: "tasks", label: "Task Board", icon: ListTodo },
   { id: "runs", label: "Runs", icon: PlaySquare },
+  { id: "live-status", label: "Live Status", icon: RadioTower },
   { id: "activity", label: "Activity", icon: Activity },
 ];
 

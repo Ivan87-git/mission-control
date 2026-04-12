@@ -171,3 +171,58 @@ export interface DispatcherStatus {
   stale_missions: { mission_id: string; status: string; pid?: number | null; reason: string }[];
   last_dispatch_log_line?: string | null;
 }
+
+export interface LiveStatusTask {
+  id: string;
+  title: string;
+  status: TaskBoardStatus;
+  lifecycle_status: TaskLifecycleStatus;
+  priority?: string | null;
+  run_id?: string | null;
+  last_error?: string | null;
+  unblock_condition?: string | null;
+  waiting_for_input?: boolean;
+  last_event_at?: string | null;
+  updated_at?: string | null;
+  latest_event_type?: string | null;
+  latest_event_actor?: string | null;
+  latest_event_note?: string | null;
+  latest_event_created_at?: string | null;
+}
+
+export interface LiveStatusAction {
+  id: string;
+  task_id: string;
+  title: string;
+  run_id?: string | null;
+  board_status: TaskBoardStatus;
+  event_type: string;
+  actor?: string | null;
+  note?: string | null;
+  created_at: string;
+}
+
+export interface LiveStatusSnapshot {
+  snapshot_at: string;
+  refresh_interval_seconds: number;
+  orchestrator: {
+    active_runs: number;
+    blocked_runs: number;
+    failed_runs: number;
+    latest_run_update?: string | null;
+    current_runs: Array<{
+      mission_id: string;
+      mission_name: string;
+      status: string;
+      updated_at: string;
+      error?: string | null;
+      progress_label: string;
+      running_tasks: number;
+      blocked_tasks: number;
+      failed_tasks: number;
+    }>;
+  };
+  dispatcher: DispatcherStatus;
+  active_tasks: LiveStatusTask[];
+  recent_task_actions: LiveStatusAction[];
+}

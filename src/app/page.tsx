@@ -7,6 +7,7 @@ import AgentsView from "@/components/AgentsView";
 import TasksView from "@/components/TasksView";
 import ActivityView from "@/components/ActivityView";
 import RunsView from "@/components/RunsView";
+import LiveStatusView from "@/components/LiveStatusView";
 
 const views: Record<string, React.ComponentType> = {
   dashboard: DashboardView,
@@ -14,6 +15,7 @@ const views: Record<string, React.ComponentType> = {
   agents: AgentsView,
   tasks: TasksView,
   runs: RunsView,
+  "live-status": LiveStatusView,
   activity: ActivityView,
 };
 
@@ -28,7 +30,7 @@ export default function Home() {
         <div className="flex items-center justify-between mb-6 pb-4" style={{ borderBottom: "1px solid var(--border)" }}>
           <div>
             <h1 className="text-lg font-bold capitalize" style={{ color: "var(--text-primary)" }}>
-              {activeView === "runs" ? "Mission runs" : activeView}
+              {activeView === "runs" ? "Mission runs" : activeView === "live-status" ? "Live status" : activeView}
             </h1>
             <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
               {new Date().toLocaleDateString("en-US", {

@@ -49,6 +49,8 @@ export const api = {
     fetchJson<import("./types").RunSummary[]>(`/api/runs?limit=${limit}${projectId ? `&project_id=${encodeURIComponent(projectId)}` : ""}`),
   getDispatcherStatus: () =>
     fetchJson<import("./types").DispatcherStatus>("/api/dispatcher-status"),
+  getLiveStatus: () =>
+    fetchJson<import("./types").LiveStatusSnapshot>("/api/live-status"),
   updateTask: (id: string, body: Record<string, unknown>) =>
     patchJson<import("./types").Task>(`/api/tasks/${id}`, body),
   updateTaskResponse: (id: string, body: Record<string, unknown>) =>
