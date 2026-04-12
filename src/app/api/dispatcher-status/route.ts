@@ -40,7 +40,7 @@ function lastLogLine() {
 export async function GET() {
   const lines = processTable();
   const dispatcher = findDispatcher(lines);
-  const activeRuntimeTasks: { mission_id: string; task_id: string; title: string; status: string; started_at?: string | null; blocked_by_reason?: string | null }[] = [];
+  const activeRuntimeTasks: { mission_id: string; task_id: string; title: string; status: string; started_at?: string | null; blocked_by_reason?: string | null; unblock_condition?: string | null; needs_user_input?: boolean }[] = [];
   const staleMissions: { mission_id: string; status: string; pid?: number | null; reason: string }[] = [];
   let activeMissions = 0;
 
@@ -64,6 +64,8 @@ export async function GET() {
                 status: task.status,
                 started_at: task.started_at || null,
                 blocked_by_reason: task.blocked_by_reason || null,
+                unblock_condition: task.unblock_condition || null,
+                needs_user_input: Boolean(task.needs_user_input),
               });
             }
           }

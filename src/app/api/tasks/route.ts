@@ -40,6 +40,8 @@ export async function POST(req: NextRequest) {
     completed_at: null,
     last_event_at: null,
     run_id: body.run_id || null,
+    last_error: body.last_error || null,
+    unblock_condition: body.unblock_condition || null,
   };
   const lifecyclePatch = buildTaskLifecyclePatch(task, {
     status,
@@ -52,8 +54,8 @@ export async function POST(req: NextRequest) {
     `INSERT INTO tasks (
       id, title, project_id, assigned_agent, status, lifecycle_status, priority,
       started_at, blocked_at, waiting_for_input_at, completed_at, last_event_at,
-      waiting_for_input, run_id, source_task_id, content, flag
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      waiting_for_input, run_id, source_task_id, last_error, unblock_condition, content, flag
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     id,
     body.title,
@@ -70,6 +72,8 @@ export async function POST(req: NextRequest) {
     lifecyclePatch.waiting_for_input,
     lifecyclePatch.run_id,
     body.source_task_id || null,
+    body.last_error || null,
+    body.unblock_condition || null,
     body.content || null,
     flag,
   );

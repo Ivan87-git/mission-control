@@ -66,6 +66,7 @@ export interface Task {
   lease_expires_at?: string | null;
   attempt_count?: number;
   last_error?: string | null;
+  unblock_condition?: string | null;
   content?: string;
   flag?: string | null;
 }
@@ -157,6 +158,8 @@ export interface ActiveRuntimeTask {
   status: string;
   started_at?: string | null;
   blocked_by_reason?: string | null;
+  unblock_condition?: string | null;
+  needs_user_input?: boolean;
 }
 
 export interface DispatcherStatus {

@@ -287,6 +287,16 @@ export default function TaskDetailModal({
               </MetaSection>
             )}
 
+            {(task.last_error || task.unblock_condition) && (
+              <MetaSection label={task.status === "failed" ? "Failure details" : "Blocker details"} icon={<Workflow size={12} />}>
+                <div className="space-y-2 text-sm">
+                  {task.last_error && <div style={{ color: task.status === "failed" ? "#fca5a5" : "#fdba74" }}><span className="font-medium">Why {task.status === "failed" ? "it failed" : "it is blocked"}:</span> {task.last_error}</div>}
+                  {task.unblock_condition && <div style={{ color: "var(--text-primary)" }}><span className="font-medium">Runs again when:</span> {task.unblock_condition}</div>}
+                  {task.waiting_for_input && <div style={{ color: "#f97316" }}>This task is explicitly waiting for a human answer or approval.</div>}
+                </div>
+              </MetaSection>
+            )}
+
             {task.run_id && (
               <MetaSection label="Run linkage" icon={<Workflow size={12} />}>
                 <div className="text-sm break-all" style={{ color: "var(--text-primary)" }}>{task.run_id}</div>

@@ -54,6 +54,21 @@ export default function ExpandableTaskCard({
             </span>
           </div>
 
+          {(task.last_error || task.unblock_condition) && (
+            <div className="mt-2 space-y-1">
+              {task.last_error && (
+                <div className="text-[11px] line-clamp-2" style={{ color: task.status === "failed" ? "#fca5a5" : "#fdba74" }}>
+                  Why blocked: {task.last_error}
+                </div>
+              )}
+              {task.unblock_condition && (
+                <div className="text-[11px] line-clamp-2" style={{ color: "var(--text-secondary)" }}>
+                  Runs again when: {task.unblock_condition}
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="flex items-center justify-between mt-2 gap-2">
             <div className="flex items-center gap-2 flex-wrap">
               <div className="flex items-center gap-1">

@@ -72,6 +72,7 @@ function initSchema(db: Database.Database) {
       lease_expires_at TEXT,
       attempt_count INTEGER NOT NULL DEFAULT 0,
       last_error TEXT,
+      unblock_condition TEXT,
       content TEXT,
       flag TEXT,
       FOREIGN KEY (project_id) REFERENCES projects(id),
@@ -155,6 +156,7 @@ function runMigrations(db: Database.Database) {
   addColumn("lease_expires_at", "ALTER TABLE tasks ADD COLUMN lease_expires_at TEXT");
   addColumn("attempt_count", "ALTER TABLE tasks ADD COLUMN attempt_count INTEGER NOT NULL DEFAULT 0");
   addColumn("last_error", "ALTER TABLE tasks ADD COLUMN last_error TEXT");
+  addColumn("unblock_condition", "ALTER TABLE tasks ADD COLUMN unblock_condition TEXT");
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS task_events (

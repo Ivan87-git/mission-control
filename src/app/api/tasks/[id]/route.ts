@@ -62,6 +62,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     "waiting_for_input",
     "run_id",
     "source_task_id",
+    "lease_owner",
+    "lease_expires_at",
+    "attempt_count",
+    "last_error",
+    "unblock_condition",
     "content",
     "flag",
   ];

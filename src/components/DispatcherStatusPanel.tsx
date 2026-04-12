@@ -47,7 +47,9 @@ export default function DispatcherStatusPanel() {
               <span className="text-[11px] px-2 py-0.5 rounded-full capitalize" style={{ background: 'var(--bg-card)', color: 'var(--text-secondary)' }}>{task.status}</span>
             </div>
             <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{task.mission_id}</div>
-            {task.blocked_by_reason && <div className="text-xs" style={{ color: '#fdba74' }}>Blocker: {task.blocked_by_reason}</div>}
+            {task.blocked_by_reason && <div className="text-xs" style={{ color: '#fdba74' }}>Why blocked: {task.blocked_by_reason}</div>}
+            {task.unblock_condition && <div className="text-xs" style={{ color: '#fca5a5' }}>Runs again when: {task.unblock_condition}</div>}
+            {task.needs_user_input && <div className="text-xs" style={{ color: '#f97316' }}>Waiting for human input</div>}
           </div>
         ))}
       </div>
